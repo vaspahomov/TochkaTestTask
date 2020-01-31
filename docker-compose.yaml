@@ -27,8 +27,6 @@ services:
   mongodb:
     networks:
       - web_nw
-    ports:
-      - 27001:27001
     image: mongo:latest
     restart: on-failure:3
 networks:

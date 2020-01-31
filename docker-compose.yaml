@@ -5,10 +5,12 @@ services:
       ./backend
     networks:
       - web_nw
+    restart: on-failure:3
   frontend:
     build: ./frontend
     volumes:
       - frontend:/app/build
+    restart: on-failure:3
   proxy:
     build:
       ./proxy
@@ -21,10 +23,14 @@ services:
       - "80:80"
     networks:
       - web_nw
+    restart: on-failure:3
   mongodb:
     networks:
       - web_nw
+    ports:
+      - 27001:27001
     image: mongo:latest
+    restart: on-failure:3
 networks:
   web_nw:
     driver: bridge

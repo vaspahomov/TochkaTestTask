@@ -1,13 +1,32 @@
 version: '3'
 services:
-  web:
-    build: .
-    command: python3 -u app.py
-    ports:
-      - "5000:5000"
+  backend:
+    build:
+      ./backend
+    networks:
+      - web_nw
+  frontend:
+    build: ./frontend
     volumes:
-      - .:/app
-    links:
-      - mongodb
+      - frontend:/app/build
+  proxy:
+    build:
+      ./proxy
+    volumes:
+      - frontend:/frontend
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - web_nw
   mongodb:
+    networks:
+      - web_nw
     image: mongo:latest
+networks:
+  web_nw:
+    driver: bridge
+volumes:
+  frontend:

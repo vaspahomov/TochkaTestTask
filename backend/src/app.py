@@ -7,20 +7,18 @@ from flask_cors import CORS
 from pymongo import MongoClient
 
 from helpers.AccountsUpdaterDemon import AccountsUpdaterDemon
-from db_collections.AccountsCollection import AccountsCollection
-from entities.Account import Account
+from db_collections import AccountsCollection
+from entities import Account
 from exceptions.NotEnoughMoneyException import NotEnoughMoneyException
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 logger = app.logger
-
 logger.setLevel(logging.INFO)
 
 client = MongoClient('mongodb', 27017)
 bank_accounts_db = client.bank_accounts_db
-
 accounts_collection = AccountsCollection(bank_accounts_db, logger)
 
 accounts_updater_demon = AccountsUpdaterDemon(logger, accounts_collection)

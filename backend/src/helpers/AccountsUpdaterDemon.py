@@ -1,4 +1,4 @@
-from db_collections.AccountsCollection import AccountsCollection
+from db_collections import AccountsCollection
 import threading
 
 

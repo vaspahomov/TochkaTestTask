@@ -1,6 +1,6 @@
 from threading import Lock
 
-from entities.Account import Account
+from entities import Account
 from exceptions.NotEnoughMoneyException import NotEnoughMoneyException
 
 

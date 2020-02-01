@@ -1,3 +1,3 @@
-class NotEnoughMoneyException(Exception):
+class InvalidUserException(Exception):
     def __init__(self, message=''):
         super().__init__(message)

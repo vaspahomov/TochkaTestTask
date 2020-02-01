@@ -10,6 +10,7 @@ from helpers.AccountsUpdaterDemon import AccountsUpdaterDemon
 from db_collections import AccountsCollection
 from entities import Account
 from exceptions.NotEnoughMoneyException import NotEnoughMoneyException
+from helpers.utils import is_valid_uuid, account_is_in_db
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -36,15 +37,24 @@ def api_ping():
 
 @app.route('/api/add', methods=['POST'])
 def api_add():
-    if 'accountNumber' not in request.json or 'addition' not in request.json:
+    if 'accountNumber' not in request.json or 'addition' not in request.json or not is_valid_uuid(
+            request.json['accountNumber']):
         return jsonify(
             status=400,
             result=False,
             addition='Missing required fields in request.',
             description='Transaction status.'
         ), 400
+
     account_number = request.json['accountNumber']
     addition = int(request.json['addition'])
+    if not account_is_in_db(accounts_collection, account_number):
+        return jsonify(
+            status=404,
+            result=False,
+            addition='Account was not found.',
+            description='Transaction status.'
+        ), 404
     accounts_collection.increment_balance(account_number, addition)
     return jsonify(
         status=200,
@@ -56,7 +66,8 @@ def api_add():
 
 @app.route('/api/substract', methods=['POST'])
 def api_substract():
-    if 'accountNumber' not in request.json or 'substraction' not in request.json:
+    if 'accountNumber' not in request.json or 'substraction' not in request.json or not is_valid_uuid(
+            request.json['accountNumber']):
         return jsonify(
             status=400,
             result=False,
@@ -65,6 +76,13 @@ def api_substract():
         ), 400
     account_number = request.json['accountNumber']
     substraction = int(request.json['substraction'])
+    if not account_is_in_db(accounts_collection, account_number):
+        return jsonify(
+            status=404,
+            result=False,
+            addition='Account was not found.',
+            description='Transaction status.'
+        ), 404
     try:
         accounts_collection.decrement_balance(account_number, substraction)
     except NotEnoughMoneyException:
@@ -84,7 +102,7 @@ def api_substract():
 
 @app.route('/api/status', methods=['GET'])
 def api_status():
-    if 'accountNumber' not in request.args:
+    if 'accountNumber' not in request.args or not is_valid_uuid(request.args['accountNumber']):
         return jsonify(
             status=400,
             result=False,
@@ -92,6 +110,13 @@ def api_status():
             description='Transaction status.'
         ), 400
     account_number = request.args.get('accountNumber')
+    if not account_is_in_db(accounts_collection, account_number):
+        return jsonify(
+            status=404,
+            result=False,
+            addition='Account was not found.',
+            description='Transaction status.'
+        ), 404
     return jsonify(
         status=200,
         result=True,
@@ -125,8 +150,34 @@ def api_create():
     return jsonify(
         status=200,
         result=True,
-        addition='Account was successfully created.',
+        addition={'id': account.id},
         description='Account creation.'
+    )
+
+
+@app.route('/api/delete', methods=['POST'])
+def api_delete():
+    if 'accountNumber' not in request.json or not is_valid_uuid(request.json['accountNumber']):
+        return jsonify(
+            status=400,
+            result=False,
+            addition='Missing required fields in request.',
+            description='Account deletion.'
+        ), 400
+    account_number = request.json['accountNumber']
+    if not account_is_in_db(accounts_collection, account_number):
+        return jsonify(
+            status=404,
+            result=False,
+            addition='Account was not found.',
+            description='Transaction status.'
+        ), 404
+    accounts_collection.delete_account(account_number)
+    return jsonify(
+        status=200,
+        result=True,
+        addition=f'Successfully deleted account with id: {account_number}',
+        description='Account deletion.'
     )
 
 

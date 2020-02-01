@@ -13,6 +13,9 @@ class AccountsCollection:
     def create_new_account(self, account: Account) -> None:
         self._accounts_collection.insert_one(account.serialize())
 
+    def delete_account(self, account_id: str) -> None:
+        self._accounts_collection.delete_one({'id': account_id})
+
     def get_account(self, id: str) -> Account:
         account_json = self._accounts_collection.find_one({'id': id})
         return Account.deserialize(account_json)

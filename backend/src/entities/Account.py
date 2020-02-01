@@ -1,5 +1,7 @@
 import uuid
 
+from exceptions.InvalidUserException import InvalidUserException
+
 
 class Account:
     def __init__(self, owner_name, balance=0, hold=0, is_open=0, id=None):
@@ -42,9 +44,12 @@ class Account:
 
     @staticmethod
     def deserialize(json: dict):
-        id = json['id']
-        owner_name = json['ownerName']
-        balance = json['balance']
-        hold = json['hold']
-        status = json['status']
-        return Account(owner_name, balance, hold, status, id)
+        try:
+            id = json['id']
+            owner_name = json['ownerName']
+            balance = json['balance']
+            hold = json['hold']
+            status = json['status']
+            return Account(owner_name, balance, hold, status, id)
+        except:
+            raise InvalidUserException()

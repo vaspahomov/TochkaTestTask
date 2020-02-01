@@ -29,6 +29,14 @@ services:
       - web_nw
     image: mongo:latest
     restart: on-failure:3
+  backend-tests:
+    build:
+      ./tests
+    command: bash -c "pytest tests/integration_tests.py"
+    networks:
+      - web_nw
+    depends_on:
+      - backend
 networks:
   web_nw:
     driver: bridge

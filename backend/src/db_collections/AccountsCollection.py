@@ -2,6 +2,7 @@ from threading import Lock
 
 from entities import Account
 from exceptions.NotEnoughMoneyException import NotEnoughMoneyException
+from exceptions.OperationWithClosedAccountException import OperationWithClosedAccountException
 
 
 class AccountsCollection:
@@ -21,6 +22,9 @@ class AccountsCollection:
         return Account.deserialize(account_json)
 
     def increment_balance(self, account_id: str, increment) -> None:
+        account = self.get_account(account_id)
+        if not account.is_open:
+            raise OperationWithClosedAccountException(f'Account {account_id} is already closed!')
         self._accounts_collection.update_one(
             {'id': account_id},
             {"$inc": {'balance': increment}}
@@ -36,13 +40,12 @@ class AccountsCollection:
         with lock:
             account = self.get_account(account_id)
             result = account.balance - account.hold - decrement
-            if result < 0:
-                is_possible = False
-            else:
-                is_possible = True
 
-            if not is_possible:
-                raise NotEnoughMoneyException('Not enough money!')
+            if result < 0:
+                raise NotEnoughMoneyException(f'Not enough money on {account_id}!')
+            if not account.is_open:
+                raise OperationWithClosedAccountException(f'Account {account_id} is already closed!')
+
             self._accounts_collection.update_one(
                 {'id': account_id},
                 {"$inc": {'hold': decrement}}
@@ -53,6 +56,7 @@ class AccountsCollection:
         return [Account.deserialize(a) for a in accounts]
 
     def substract_hold(self, account_id: str) -> None:
+        print(self.logger.info(account_id))
         account = self.get_account(account_id)
         account.balance -= account.hold
         account.hold = 0

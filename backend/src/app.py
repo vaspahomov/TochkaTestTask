@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 
+from exceptions.OperationWithClosedAccountException import OperationWithClosedAccountException
 from helpers.AccountsUpdaterDemon import AccountsUpdaterDemon
 from db_collections import AccountsCollection
 from entities import Account
@@ -55,7 +56,15 @@ def api_add():
             addition='Account was not found.',
             description='Transaction status.'
         ), 404
-    accounts_collection.increment_balance(account_number, addition)
+    try:
+        accounts_collection.increment_balance(account_number, addition)
+    except OperationWithClosedAccountException:
+        return jsonify(
+            status=403,
+            result=True,
+            addition='Transaction failed. Your account is already closed.',
+            description='Transaction status.'
+        ), 403
     return jsonify(
         status=200,
         result=True,
@@ -90,6 +99,13 @@ def api_substract():
             status=403,
             result=True,
             addition='Transaction failed. You does not have enough money for this operation.',
+            description='Transaction status.'
+        ), 403
+    except OperationWithClosedAccountException:
+        return jsonify(
+            status=403,
+            result=True,
+            addition='Transaction failed. Your account is already closed.',
             description='Transaction status.'
         ), 403
     return jsonify(
@@ -146,6 +162,7 @@ def api_create():
             description='Account creation.'
         ), 400
     account = Account(request.json['name'])
+    accounts_updater_demon.subscribe_id(account.account_id)
     accounts_collection.create_new_account(account)
     return jsonify(
         status=200,
@@ -173,6 +190,7 @@ def api_delete():
             description='Transaction status.'
         ), 404
     accounts_collection.delete_account(account_number)
+    accounts_updater_demon.unsubscribe_id(account_number)
     return jsonify(
         status=200,
         result=True,
@@ -184,5 +202,5 @@ def api_delete():
 if __name__ == "__main__":
     accounts_updater_demon.start()
     for a in accounts_collection.get_all_accounts():
-        accounts_updater_demon.subscribe_id(a.id)
+        accounts_updater_demon.subscribe_id(a.account_id)
     app.run(host='0.0.0.0')

@@ -50,6 +50,13 @@ class ApiTests(unittest.TestCase):
         assert resp.status_code == 200
         ApiTests._assert_balance(self.test_user_id, 100, 100)
 
+    def test_substruct_empty_balance(self) -> None:
+        ApiTests._assert_balance(self.test_user_id, 0, 0)
+        resp = requests.post(f'{backend_url}/api/substract',
+                             json={'accountNumber': self.test_user_id, 'substraction': 100})
+        assert resp.status_code == 403
+        ApiTests._assert_balance(self.test_user_id, 0, 0)
+
     @staticmethod
     def _assert_balance(account_id: str, balance: int, hold: int) -> None:
         status_url = f'{backend_url}/api/status'

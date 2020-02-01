@@ -150,7 +150,7 @@ def api_create():
     return jsonify(
         status=200,
         result=True,
-        addition={'id': account.id},
+        addition={'id': account.account_id},
         description='Account creation.'
     )
 

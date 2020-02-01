@@ -11,10 +11,10 @@ class AccountsUpdaterDemon:
         self._interval_in_seconds = interval_in_seconds
         self._demon_thread = None
 
-    def subscribe_id(self, id) -> None:
-        self._subscribers_ids.append(id)
+    def subscribe_id(self, account_id: str) -> None:
+        self._subscribers_ids.append(account_id)
 
-    def start(self):
+    def start(self) -> None:
         if self._is_running:
             raise Exception('Demon is already running')
         self._is_running = True
@@ -23,10 +23,10 @@ class AccountsUpdaterDemon:
         self._logger.info('Starting AccountUpdaterDemon')
         self._demon_thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
         self._is_running = False
 
-    def _run(self):
+    def _run(self) -> None:
         if not self._is_running:
             return
         self._logger.info('Starting update holds')
@@ -34,6 +34,6 @@ class AccountsUpdaterDemon:
         worker.start()
         threading.Timer(self._interval_in_seconds, self._run).start()
 
-    def _update_balances(self):
+    def _update_balances(self) -> None:
         for subscriber_id in self._subscribers_ids:
             self._collection.substract_hold(subscriber_id)

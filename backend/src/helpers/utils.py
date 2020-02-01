@@ -13,7 +13,7 @@ def is_valid_uuid(uuid_to_test: str, version=4) -> bool:
     return str(uuid_obj) == uuid_to_test
 
 
-def account_is_in_db(accounts_collection, account_id):
+def account_is_in_db(accounts_collection: AccountsCollection, account_id: str):
     try:
         AccountsCollection.get_account(accounts_collection, account_id)
     except InvalidUserException:

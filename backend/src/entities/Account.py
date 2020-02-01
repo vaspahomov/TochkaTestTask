@@ -4,17 +4,17 @@ from exceptions.InvalidUserException import InvalidUserException
 
 
 class Account:
-    def __init__(self, owner_name, balance=0, hold=0, is_open=0, id=None):
-        self.id = id if id else str(uuid.uuid4())
+    def __init__(self, owner_name: str, balance=0, hold=0, is_open=0, account_id=None):
+        self.account_id = account_id if account_id else str(uuid.uuid4())
         self.owner_name = owner_name
         self.balance = balance
         self.hold = hold
         self.is_open = is_open
 
-    def add(self, addition) -> None:
+    def add(self, addition: int) -> None:
         self.balance += addition
 
-    def substract(self, substraction) -> None:
+    def substract(self, substraction: int) -> None:
         result = self.balance - self.hold - substraction
         if result < 0:
             is_possible = False
@@ -33,9 +33,9 @@ class Account:
             'status': 'opened' if self.is_open else 'closed'
         }
 
-    def serialize(self):
+    def serialize(self) -> {}:
         return {
-            'id': self.id,
+            'id': self.account_id,
             'ownerName': self.owner_name,
             'balance': self.balance,
             'hold': self.hold,
